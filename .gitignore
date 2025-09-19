@@ -1,0 +1,31 @@
+# Node modules (if using npm or bundlers)
+node_modules/
+
+# Build output (if using build tools like Webpack or Parcel)
+dist/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Temporary files
+*.tmp
+*.swp
+
+# Chrome extension packaging
+*.crx
+*.pem

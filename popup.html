@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Extension</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="header">
+      <img src="icons/burger1.png" alt="menu" id="menu-btn"></img>
+      <div class="head-logo">
+        <img class="head-icon" src="icons/icon.ico" alt="Chad" />
+        <h1 class="head-text">ChadAI</h1>
+      </div>
+      <p></p>
+    </div>
+
+   <!-- ...existing code... -->
+<div class="chat-container" id="chat">
+  <!-- Example bot message bubble -->
+  <div class="chat-placeholder">
+    Ask your <span style="font-size: 2rem;" class="gradient-text">question</span>?
+  </div>
+</div>
+
+
+<!-- ...existing code... -->
+  <div c lass="popup-bottom">
+<!-- Screenshot preview above input -->
+<div id="screenshot-preview"></div>
+
+<div class="input-area">
+  <button role="button" id="capture-btn">
+    <img class="icon-photo" src="icons/photo.png" alt="Capture">
+    <p>Capture</p>
+  </button>
+  <input
+    type="text"
+    id="message-input"
+    placeholder="Type your message..."
+    autocomplete="off"
+  />
+  <button id="send-btn">
+    <img class="icon-photo" src="icons/send.png" alt="Send">
+  </button>
+</div>
+
+
+    <div class="copyright-1">
+      <p>© 2024-2025. ChadAI</p>
+    </div>
+</div>
+  
+    <div id="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-logo">
+          <img class="head-icon" src="icons/icon.ico" alt="Chad" />
+          <h1 class="head-text">ChadAI</h1>
+        </div>
+        <button id="close-sidebar">
+          <img id="menu-btn" src="icons/close.png" alt="Close">
+        </button>
+      </div>
+      <ul class="sidebar-list">
+        <li>
+  <a href="#" id="settings-link">
+    <img class="sidebar-icons" src="icons/settings.png" alt="Settings">
+    Settings
+  </a>
+  <div id="settings-accordion" class="accordion-content" style="display: none;">
+    <label>
+      <input type="radio" name="theme" value="light" checked> Light
+    </label>
+    <label>
+      <input type="radio" name="theme" value="dark"> Dark
+    </label>
+  </div>
+</li>
+        <li><a href="#">
+          <img class="sidebar-icons" src="icons/weblink.png" alt="Website">
+          Website Link</a></li>
+        <li><a href="#">
+          <img class="sidebar-icons" src="icons/policy.png" alt="Policy">
+          Copyright Policy</a></li>
+      </ul>
+      <div class="sidebar-bottom">
+        <!-- <div class="sidebar-logo">
+          <img class="head-icon" src="icons/icon.ico" alt="Chad" />
+          <h1 class="head-text">ChadAI</h1>
+        </div> -->
+        <div class="copyright-2">
+          <p>© 2024-2025. ChadAI</p>
+        </div>
+      </div>   
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
