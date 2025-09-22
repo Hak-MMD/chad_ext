@@ -519,15 +519,20 @@ body.theme-dark .message.user-message {
 } */
 
 #error-popup {
-  background: #ffdddd;
+  position: absolute;
+  bottom: 80px;
+  width: 85%;
+  left: 13px;
+  background: #ffc6c6;
   color: #a33;
-  border: 1px solid #e99;
+  /* border: 1px solid #e99; */
   border-radius: 6px;
   padding: 8px 12px;
-  margin-bottom: 6px;
-  font-size: 14px;
-  text-align: center;
+  /* margin-bottom: 6px; */
+  font-size: 13px;
+  /* text-align: center; */
   animation: fadeIn 0.2s ease-in-out;
+  display: none;
 }
 /* Add to popup.css */
 .chat-placeholder {
@@ -582,4 +587,25 @@ body.theme-dark .message.user-message {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.chad-chrome-ext-btn {
+  background-color: rgb(255, 0, 0);
+  color: #b7b7b7;
+  border: none;
+  border-radius: 50%;
+  width: 100px;
+  height: 40px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+  transition: background 0.2s, border 0.2s, color 0.2s;
+  /* Remove image icon spacing if present */
+  padding: 0;
+}
+.chad-chrome-ext-btn:hover {
+  background: #f3f3f3;
 }

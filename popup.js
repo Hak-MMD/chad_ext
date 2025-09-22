@@ -104,6 +104,43 @@ sendBtn.addEventListener("click", () => {
       body: JSON.stringify(payload),
     })
       .then(async (response) => {
+        console.log("Response status:", response);
+        // Handle 400 and 500 errors with custom popup
+        if (!response.ok) {
+          // consolwe.log("error 400");
+
+          let errorText = "";
+          if (response.status === 400) {
+            // Try to parse error-message from JSON
+            console.log("error 400");
+            try {
+              const data = await response.json();
+              console.log("data error 400", data);
+              errorText = data.errorMessage || "Bad request.";
+            } catch {
+              errorText = "An error occurred! Try again later!";
+            }
+            console.log("errorText", errorText);
+            showErrorPopup(errorText);
+            throw new Error(errorText);
+          } else if (response.status === 500) {
+            try {
+              const data = await response.json();
+              console.log("data error 500", data);
+              errorText =
+                data.errorMessage || "Server overload! Try again later!";
+            } catch {
+              errorText = "An error occurred! Try again later!";
+            }
+            showErrorPopup(errorText);
+            throw new Error(errorText);
+          } else {
+            errorText = `Error ${response.status}`;
+            showErrorPopup(errorText);
+            throw new Error(errorText);
+          }
+        }
+        // Normal JSON response
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           return response.json();
@@ -128,7 +165,8 @@ sendBtn.addEventListener("click", () => {
         if (processingMsg.parentNode) {
           processingMsg.parentNode.removeChild(processingMsg);
         }
-        addMessage("Failed to send: " + error, "bot");
+        // Don't show default Chrome popup, just use custom alert
+        // addMessage("Failed to send: " + error, "bot");
       });
 
     // Reset input and preview after sending
@@ -242,18 +280,18 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 // Create floating alert above input
 function showErrorPopup(text) {
-  const oldAlert = document.getElementById("error-popup");
-  if (oldAlert) oldAlert.remove(); // prevent duplicates
-
-  const alert = document.createElement("div");
-  alert.id = "error-popup";
+  console.log("showErrorPopup", text);
+  const alert = document.getElementById("error-popup");
+  if (alert.style.display === "block") {
+    alert.style.display = "none"; // prevent duplicates
+    showErrorPopup(text);
+    return;
+  }
   alert.textContent = text;
+  alert.style.display = "block";
 
-  document.querySelector(".popup-bottom").prepend(alert);
-
-  // Auto-remove after 4s
   setTimeout(() => {
-    alert.remove();
+    alert.style.display = "none";
   }, 4000);
 }
 
