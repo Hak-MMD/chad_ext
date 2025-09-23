@@ -42,137 +42,167 @@ function addMessage(text, sender = "user") {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+// helper to check if there's content to send
+function hasContentToSend(callback) {
+  const text = messageInput.value.trim();
+  if (text) return callback(true);
+  // check storage for screenshot
+  chrome.storage.local.get("lastScreenshot", (data) => {
+    const hasShot = !!data.lastScreenshot;
+    callback(hasShot);
+  });
+}
+
 // Send message on button click or Enter key
 sendBtn.addEventListener("click", () => {
-  const text = messageInput.value.trim();
-
-  chrome.storage.local.get("lastScreenshot", (data) => {
-    let screenshot = data.lastScreenshot;
-
-    // Strip data URL prefix if present
-    if (screenshot && screenshot.startsWith("data:image")) {
-      screenshot = screenshot.split(",")[1];
+  // prevent double sends
+  if (sendBtn.disabled) return;
+  hasContentToSend((canSend) => {
+    if (!canSend) {
+      // brief visual feedback
+      sendBtn.style.opacity = 0.6;
+      setTimeout(() => (sendBtn.style.opacity = 1), 300);
+      return;
     }
 
-    // Show user message(s) in chat immediately
-    if (text && screenshot) {
-      addMessage(text, "user");
+    const text = messageInput.value.trim();
 
-      const imgMsg = document.createElement("div");
-      imgMsg.classList.add("message", "user-message");
-      const img = document.createElement("img");
-      img.src = "data:image/png;base64," + screenshot;
-      img.className = "chat-img";
-      imgMsg.appendChild(img);
-      chatContainer.appendChild(imgMsg);
+    chrome.storage.local.get("lastScreenshot", (data) => {
+      let screenshot = data.lastScreenshot;
 
+      // Strip data URL prefix if present
+      if (screenshot && screenshot.startsWith("data:image")) {
+        screenshot = screenshot.split(",")[1];
+      }
+
+      // Show user message(s) in chat immediately
+      if (text && screenshot) {
+        addMessage(text, "user");
+
+        const imgMsg = document.createElement("div");
+        imgMsg.classList.add("message", "user-message");
+        const img = document.createElement("img");
+        img.src = "data:image/png;base64," + screenshot;
+        img.className = "chat-img";
+        imgMsg.appendChild(img);
+        chatContainer.appendChild(imgMsg);
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (text) {
+        addMessage(text, "user");
+      } else if (screenshot) {
+        const imgMsg = document.createElement("div");
+        imgMsg.classList.add("message", "user-message");
+        const img = document.createElement("img");
+        img.src = "data:image/png;base64," + screenshot;
+        img.className = "chat-img";
+        imgMsg.appendChild(img);
+        chatContainer.appendChild(imgMsg);
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      // Disable send button while pending
+      sendBtn.disabled = true;
+      sendBtn.style.cursor = "not-allowed";
+
+      // Show "Processing data" message from bot
+      const processingMsg = document.createElement("div");
+      // processingMsg.classList.add("message", "bot-message");
+      processingMsg.classList.add("gradient-text");
+      processingMsg.textContent = "Processing data...";
+      chatContainer.appendChild(processingMsg);
       chatContainer.scrollTop = chatContainer.scrollHeight;
-    } else if (text) {
-      addMessage(text, "user");
-    } else if (screenshot) {
-      const imgMsg = document.createElement("div");
-      imgMsg.classList.add("message", "user-message");
-      const img = document.createElement("img");
-      img.src = "data:image/png;base64," + screenshot;
-      img.className = "chat-img";
-      imgMsg.appendChild(img);
-      chatContainer.appendChild(imgMsg);
 
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+      // Prepare data for POST
+      const payload = {
+        text: text || "",
+        screenshot: screenshot || "",
+      };
 
-    // Show "Processing data" message from bot
-    const processingMsg = document.createElement("div");
-    // processingMsg.classList.add("message", "bot-message");
-    processingMsg.classList.add("gradient-text");
-    processingMsg.textContent = "Processing data...";
-    chatContainer.appendChild(processingMsg);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+      // Send POST request to localhost
+      fetch("http://localhost:3001/api/v1/ai/message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+        .then(async (response) => {
+          console.log("Response status:", response);
+          // Handle 400 and 500 errors with custom popup
+          if (!response.ok) {
+            // consolwe.log("error 400");
 
-    // Prepare data for POST
-    const payload = {
-      text: text || "",
-      screenshot: screenshot || "",
-    };
-
-    // Send POST request to localhost
-    fetch("http://localhost:3001/api/v1/ai/message", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then(async (response) => {
-        console.log("Response status:", response);
-        // Handle 400 and 500 errors with custom popup
-        if (!response.ok) {
-          // consolwe.log("error 400");
-
-          let errorText = "";
-          if (response.status === 400) {
-            // Try to parse error-message from JSON
-            console.log("error 400");
-            try {
-              const data = await response.json();
-              console.log("data error 400", data);
-              errorText = data.errorMessage || "Bad request.";
-            } catch {
-              errorText = "An error occurred! Try again later!";
+            let errorText = "";
+            if (response.status === 400) {
+              // Try to parse error-message from JSON
+              console.log("error 400");
+              try {
+                const data = await response.json();
+                console.log("data error 400", data);
+                errorText = data.errorMessage || "Bad request.";
+              } catch {
+                errorText = "An error occurred! Try again later!";
+              }
+              console.log("errorText", errorText);
+              showErrorPopup(errorText);
+              throw new Error(errorText);
+            } else if (response.status === 500) {
+              try {
+                const data = await response.json();
+                console.log("data error 500", data);
+                errorText =
+                  data.errorMessage || "Server overload! Try again later!";
+              } catch {
+                errorText = "An error occurred! Try again later!";
+              }
+              showErrorPopup(errorText);
+              throw new Error(errorText);
+            } else {
+              errorText = `Error ${response.status}`;
+              showErrorPopup(errorText);
+              throw new Error(errorText);
             }
-            console.log("errorText", errorText);
-            showErrorPopup(errorText);
-            throw new Error(errorText);
-          } else if (response.status === 500) {
-            try {
-              const data = await response.json();
-              console.log("data error 500", data);
-              errorText =
-                data.errorMessage || "Server overload! Try again later!";
-            } catch {
-              errorText = "An error occurred! Try again later!";
-            }
-            showErrorPopup(errorText);
-            throw new Error(errorText);
-          } else {
-            errorText = `Error ${response.status}`;
-            showErrorPopup(errorText);
-            throw new Error(errorText);
           }
-        }
-        // Normal JSON response
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          return response.json();
-        } else {
-          const text = await response.text();
-          throw new Error("Non-JSON response: " + text);
-        }
-      })
-      .then((result) => {
-        // Remove "Processing data" message
-        if (processingMsg.parentNode) {
-          processingMsg.parentNode.removeChild(processingMsg);
-        }
-        // Show only the reply field from server
-        if (result.reply) {
-          addMessage(result.reply, "bot");
-        } else {
-          addMessage("No reply from server.", "bot");
-        }
-      })
-      .catch((error) => {
-        if (processingMsg.parentNode) {
-          processingMsg.parentNode.removeChild(processingMsg);
-        }
-        // Don't show default Chrome popup, just use custom alert
-        // addMessage("Failed to send: " + error, "bot");
-      });
+          // Normal JSON response
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            return response.json();
+          } else {
+            const text = await response.text();
+            throw new Error("Non-JSON response: " + text);
+          }
+        })
+        .then((result) => {
+          // Remove "Processing data" message
+          if (processingMsg.parentNode) {
+            processingMsg.parentNode.removeChild(processingMsg);
+          }
+          // Show only the reply field from server
+          if (result.reply) {
+            addMessage(result.reply, "bot");
+          } else {
+            addMessage("No reply from server.", "bot");
+          }
+          // re-enable send button
+          sendBtn.disabled = false;
+          sendBtn.style.cursor = "pointer";
+        })
+        .catch((error) => {
+          if (processingMsg.parentNode) {
+            processingMsg.parentNode.removeChild(processingMsg);
+          }
+          // re-enable send button on error
+          sendBtn.disabled = false;
+          sendBtn.style.cursor = "pointer";
+        });
 
-    // Reset input and preview after sending
-    messageInput.value = "";
-    chrome.storage.local.remove("lastScreenshot", () => {
-      renderScreenshotPreview(null);
+      // Reset input and preview after sending
+      messageInput.value = "";
+      chrome.storage.local.remove("lastScreenshot", () => {
+        renderScreenshotPreview(null);
+      });
     });
   });
 });

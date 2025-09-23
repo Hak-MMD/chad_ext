@@ -163,7 +163,8 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
       overlay.remove();
     }
     document.removeEventListener("keydown", handleKeyControls);
-    chrome.runtime.sendMessage({ action: "open_popup_window" });
+    // Reopen the popup the same way as after capture
+    chrome.runtime.sendMessage({ action: "reopen_popup" });
   }
 
   function handleKeyControls(e) {
@@ -177,6 +178,13 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
 
   function captureScreenshot() {
     let rect = selectionBox.getBoundingClientRect();
+
+    // Ignore very small selections (single click or tiny area)
+    if (rect.width < 5 || rect.height < 5) {
+      console.log("Selection too small — ignoring capture.");
+      // keep the overlay so user can reselect
+      return;
+    }
 
     chrome.runtime.sendMessage({
       action: "capture_screen",
