@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Screenshot Chat",
+  "name": "ChadAI",
   "version": "1.0",
   "description": "Capture a specific area, process it with AI, and get answers in chat.",
   "permissions": [
