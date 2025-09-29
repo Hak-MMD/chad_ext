@@ -121,7 +121,7 @@ sendBtn.addEventListener("click", () => {
       };
 
       // Send POST request to localhost
-      fetch("http://localhost:3001/api/v1/ai/message", {
+      fetch("https://chad-server.onrender.com/api/v1/ai/message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
