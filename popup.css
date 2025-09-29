@@ -77,16 +77,17 @@ body.theme-dark .message.user-message {
 }
 
 .head-icon {
-  width: 50px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   padding: 0;
-  margin-top: 5px;
+  margin-top: 13px;
+  margin-right: 5px;
   /* border: solid 1px black; */
 }
 
 .head-text {
-  font-size: 20px;
-  font-weight: normal;
+  font-size: 23px;
+  font-weight: 550;
 }
 
 .head-logo {
