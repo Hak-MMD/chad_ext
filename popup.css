@@ -82,6 +82,7 @@ body.theme-dark .message.user-message {
   padding: 0;
   margin-top: 13px;
   margin-right: 5px;
+  margin-left: 10px;
   /* border: solid 1px black; */
 }
 

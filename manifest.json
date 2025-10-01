@@ -3,14 +3,7 @@
   "name": "ChadAI",
   "version": "1.0",
   "description": "Capture a specific area, process it with AI, and get answers in chat.",
-  "permissions": [
-    "storage",
-    "sidePanel",
-    "tabs",
-    "activeTab",
-    "scripting",
-    "downloads"
-  ],
+  "permissions": ["storage", "tabs", "activeTab", "scripting"],
   "background": {
     "service_worker": "background.js"
   },
