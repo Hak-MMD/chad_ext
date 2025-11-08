@@ -23,7 +23,7 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
     overlay.style.left = "0";
     overlay.style.width = "100vw";
     overlay.style.height = "100vh";
-    overlay.style.background = "rgba(0, 0, 0, 0.3)";
+    overlay.style.background = "rgba(0, 0, 0, 0.1)";
     overlay.style.cursor = "crosshair";
     overlay.style.zIndex = "9999";
     document.body.appendChild(overlay);
@@ -32,8 +32,8 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
     selectionBox = document.createElement("div");
     selectionBox.id = "selection-box";
     selectionBox.style.position = "absolute";
-    selectionBox.style.border = "2px dashed white";
-    selectionBox.style.background = "rgba(255, 255, 255, 0.2)";
+    selectionBox.style.border = "2px dashed black";
+    selectionBox.style.background = "rgba(0, 0, 0, 0.89)";
     overlay.appendChild(selectionBox);
 
     // Mouse event listeners

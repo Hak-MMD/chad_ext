@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "ChadAI",
   "version": "1.0",
+  "type": "module",
   "description": "Capture a specific area, process it with AI, and get answers in chat.",
   "permissions": ["storage", "tabs", "activeTab", "scripting"],
   "background": {
