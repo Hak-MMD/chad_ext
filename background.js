@@ -1,37 +1,51 @@
 // background.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action == "start_capture") {
+  if (message.action === "start_capture") {
     console.log("Starting capture from bg.js");
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tabId = tabs[0].id;
 
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabId },
-          files: ["content.js"],
-        },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.warn("Restricted page:", chrome.runtime.lastError.message);
+      // Step 1 — ping the tab to see if content.js is already injected
+      chrome.tabs.sendMessage(tabId, { action: "ping" }, () => {
+        if (chrome.runtime.lastError) {
+          // ❌ No content script → inject it
+          console.log("content.js not loaded, injecting...");
 
-            // Notify popup about restriction
-            sendResponse({
-              success: false,
-              error: chrome.runtime.lastError.message,
-            });
-            return;
-          }
+          chrome.scripting.executeScript(
+            {
+              target: { tabId },
+              files: ["content.js"],
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.warn(
+                  "Restricted page:",
+                  chrome.runtime.lastError.message
+                );
 
-          // Success → tell popup to close
+                sendResponse({
+                  success: false,
+                  error: chrome.runtime.lastError.message,
+                });
+                return;
+              }
+
+              // After injection → start overlay
+              chrome.tabs.sendMessage(tabId, { action: "capture_overlay" });
+              sendResponse({ success: true });
+            }
+          );
+        } else {
+          // ✅ content.js already injected → just start overlay
+          console.log("content.js already loaded, sending capture_overlay");
           chrome.tabs.sendMessage(tabId, { action: "capture_overlay" });
           sendResponse({ success: true });
         }
-      );
+      });
     });
 
-    // IMPORTANT: return true → keeps sendResponse alive for async
-    return true;
+    return true; // keep sendResponse alive
   }
 });
 

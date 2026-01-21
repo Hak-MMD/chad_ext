@@ -8,7 +8,10 @@ import {
 } from "./modules/screenshot.js";
 
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  chrome.tabs.sendMessage(tabs[0].id, { action: "cleanup_overlay" });
+  chrome.tabs.sendMessage(tabs[0].id, { action: "cleanup_overlay" }, () => {
+    // Ignore errors — content script may not exist yet
+    void chrome.runtime.lastError;
+  });
 });
 
 setupDOMEvents();
