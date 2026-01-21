@@ -13,33 +13,96 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
   let startX, startY, endX, endY;
   let selecting = false;
 
-  // ---- 3. Overlay creation ----
   function createOverlay() {
-    // Main overlay covering the page
-    overlay = document.createElement("div");
-    overlay.id = "chad-screenshot-overlay";
-    overlay.style.position = "fixed";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100vw";
-    overlay.style.height = "100vh";
-    overlay.style.background = "rgba(0, 0, 0, 0.1)";
-    overlay.style.cursor = "crosshair";
-    overlay.style.zIndex = "9999";
-    document.body.appendChild(overlay);
+    // Create host
+    const host = document.createElement("div");
+    host.id = "chad-screenshot-host";
+    host.style.position = "fixed";
+    host.style.top = "0";
+    host.style.left = "0";
+    host.style.width = "100vw";
+    host.style.height = "100vh";
+    host.style.zIndex = "999999";
+    host.style.pointerEvents = "none"; // allow overlay to control events
+    document.body.appendChild(host);
 
-    // Initial empty selection box
+    // Shadow root
+    const shadow = host.attachShadow({ mode: "open" });
+
+    // Shadow stylesheet (FULL isolation)
+    const style = document.createElement("style");
+    style.textContent = `
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.05);
+      cursor: crosshair;
+      pointer-events: auto;
+    }
+
+    #selection-box {
+      position: absolute;
+      border: 2px dashed white;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(1px);
+      pointer-events: none;
+    }
+
+    #controls {
+      position: absolute;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      gap: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      pointer-events: auto;
+    }
+
+    button {
+      all: unset;
+      padding: 6px 18px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      color: #222;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    button:hover {
+      background: #f3f3f3;
+    }
+  `;
+    shadow.appendChild(style);
+
+    // Overlay
+    overlay = document.createElement("div");
+    overlay.id = "overlay";
+    shadow.appendChild(overlay);
+
+    // Selection box
     selectionBox = document.createElement("div");
     selectionBox.id = "selection-box";
-    selectionBox.style.position = "absolute";
-    selectionBox.style.border = "2px dashed black";
-    selectionBox.style.background = "rgba(0, 0, 0, 0.89)";
-    overlay.appendChild(selectionBox);
+    shadow.appendChild(selectionBox);
 
-    // Mouse event listeners
+    // Mouse events
     overlay.addEventListener("mousedown", startSelection);
     overlay.addEventListener("mousemove", updateSelection);
     overlay.addEventListener("mouseup", endSelection);
+
+    // Save shadow root for later use
+    window.__CHAD_SHADOW_ROOT__ = shadow;
   }
 
   // ---- 4. Start drawing selection ----
@@ -95,12 +158,11 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
 
   // ---- 8. Show Search + Cancel buttons ----
   function showControls() {
-    let controls = document.createElement("div");
+    const controls = document.createElement("div");
     controls.id = "chad-selection-controls";
+
     Object.assign(controls.style, {
       position: "absolute",
-      bottom: "20px",
-      right: "20px",
       background: "#fff",
       padding: "8px 12px",
       borderRadius: "8px",
@@ -108,6 +170,8 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
       gap: "10px",
       zIndex: "10000",
       boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+      transition: "opacity 0.15s ease",
+      opacity: "0",
     });
 
     // Prevent clicks inside controls from bubbling up
@@ -115,7 +179,8 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
       e.stopPropagation();
       e.preventDefault();
     });
-    // Unique inline style for buttons
+
+    // Button style
     const btnStyle = {
       background: "#fff",
       border: "1px solid #ccc",
@@ -129,21 +194,20 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
       outline: "none",
       boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
     };
+
     // Search button
-    let searchBtn = document.createElement("button");
+    const searchBtn = document.createElement("button");
     searchBtn.innerText = "Search";
     Object.assign(searchBtn.style, btnStyle);
-    searchBtn.id = "chad-ext-btn-search";
     searchBtn.onmouseenter = () => (searchBtn.style.background = "#f3f3f3");
     searchBtn.onmouseleave = () => (searchBtn.style.background = "#fff");
     searchBtn.onclick = () => captureScreenshot();
     searchBtn.addEventListener("mousedown", (e) => e.stopPropagation());
 
     // Cancel button
-    let cancelBtn = document.createElement("button");
+    const cancelBtn = document.createElement("button");
     cancelBtn.innerText = "Cancel";
     Object.assign(cancelBtn.style, btnStyle);
-    cancelBtn.id = "chad-ext-btn-cancel";
     cancelBtn.onmouseenter = () => (cancelBtn.style.background = "#f3f3f3");
     cancelBtn.onmouseleave = () => (cancelBtn.style.background = "#fff");
     cancelBtn.onclick = () => cancelSelection();
@@ -153,18 +217,56 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
     controls.appendChild(cancelBtn);
     overlay.appendChild(controls);
 
-    // Add keyboard shortcuts
-    document.addEventListener("keydown", handleKeyControls);
-  }
+    // --- SMART POSITIONING LOGIC ---
+    const rect = selectionBox.getBoundingClientRect();
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
 
-  function cancelSelection() {
-    console.log("Capture cancelled");
-    if (overlay && overlay.parentNode) {
-      overlay.remove();
+    const controlsWidth = 200; // approx width of the buttons container
+    const controlsHeight = 50; // approx height
+
+    const margin = 12;
+
+    let posX, posY;
+
+    // 1. Default: bottom-right OUTSIDE selection
+    posX = rect.right + margin;
+    posY = rect.bottom + margin;
+
+    // If outside-right is off-screen → try above-right
+    if (posX + controlsWidth > viewportW) {
+      posX = rect.right - controlsWidth;
     }
-    document.removeEventListener("keydown", handleKeyControls);
-    // Reopen the popup the same way as after capture
-    chrome.runtime.sendMessage({ action: "reopen_popup" });
+
+    // If below is off-screen → move above
+    if (posY + controlsHeight > viewportH) {
+      posY = rect.top - controlsHeight - margin;
+    }
+
+    // If above is also off-screen → place INSIDE bottom-right
+    if (posY < 0) {
+      posY = rect.bottom - controlsHeight - margin;
+    }
+
+    // If inside-bottom-right still off-screen → inside-top-right
+    if (posY < 0) {
+      posY = rect.top + margin;
+    }
+
+    // Final clamp to viewport
+    posX = Math.max(8, Math.min(posX, viewportW - controlsWidth - 8));
+    posY = Math.max(8, Math.min(posY, viewportH - controlsHeight - 8));
+
+    controls.style.left = `${posX}px`;
+    controls.style.top = `${posY}px`;
+
+    // Fade in
+    requestAnimationFrame(() => {
+      controls.style.opacity = "1";
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", handleKeyControls);
   }
 
   function handleKeyControls(e) {
@@ -175,34 +277,47 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
       document.removeEventListener("keydown", handleKeyControls);
     }
   }
+  function restoreScroll() {
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+  }
+
+  function cancelSelection() {
+    console.log("Capture cancelled");
+    if (overlay && overlay.parentNode) {
+      overlay.remove();
+    }
+    restoreScroll();
+    window.__SCREENSHOT_OVERLAY_ACTIVE__ = false;
+    document.removeEventListener("keydown", handleKeyControls);
+    chrome.runtime.sendMessage({ action: "reopen_popup" });
+  }
 
   function captureScreenshot() {
     let rect = selectionBox.getBoundingClientRect();
 
-    // Ignore very small selections (single click or tiny area)
     if (rect.width < 5 || rect.height < 5) {
       console.log("Selection too small — ignoring capture.");
-      // keep the overlay so user can reselect
       return;
     }
 
     chrome.runtime.sendMessage({
       action: "capture_screen",
-      x: rect.left + window.scrollX,
-      y: rect.top + window.scrollY,
+      x: rect.left,
+      y: rect.top,
       width: rect.width,
       height: rect.height,
     });
 
     console.log("Capture initiated with CSS coords:", rect);
 
-    // Remove overlay
     if (overlay && overlay.parentNode) {
       overlay.remove();
     }
+    restoreScroll();
+    window.__SCREENSHOT_OVERLAY_ACTIVE__ = false;
     document.removeEventListener("keydown", handleKeyControls);
 
-    // Tell background to reopen popup in same window
     chrome.runtime.sendMessage({ action: "reopen_popup" });
   }
 
@@ -313,6 +428,22 @@ if (!window.__SCREENSHOT_OVERLAY_ACTIVE__) {
         }
       };
       img.src = dataUrl;
+    }
+  });
+  // ---- 9. Cleanup overlay on request ----
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.action === "cleanup_overlay") {
+      const oldOverlay = document.getElementById("chad-screenshot-overlay");
+      const oldControls = document.getElementById("chad-selection-controls");
+      const oldBox = document.getElementById("chad-selection-box");
+
+      if (oldOverlay) oldOverlay.remove();
+      if (oldControls) oldControls.remove();
+      if (oldBox) oldBox.remove();
+
+      window.__SCREENSHOT_OVERLAY_ACTIVE__ = false;
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
     }
   });
 }

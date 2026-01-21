@@ -7,6 +7,10 @@ import {
   setupScreenshotListeners,
 } from "./modules/screenshot.js";
 
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  chrome.tabs.sendMessage(tabs[0].id, { action: "cleanup_overlay" });
+});
+
 setupDOMEvents();
 setupInputListener();
 setupSendHandler();
