@@ -103,18 +103,23 @@
 export function formatBotMessage(text) {
   let html = text;
 
+  // ========== CODE ==========
+  // 1. Extract code blocks first
+  const codeBlocks = [];
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+    codeBlocks.push({ lang: lang || "text", code });
+    return `@@CODEBLOCK_${codeBlocks.length - 1}@@`;
+  });
+
+  // 2. Extract inline code
+  const inlineCodes = [];
+  html = html.replace(/`([^`]+)`/g, (match, code) => {
+    inlineCodes.push(code);
+    return `§§INLINECODE_${inlineCodes.length - 1}§§`;
+  });
+
   // Escape HTML
   html = html.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  // ========== IMAGES ==========
-  html = html.replace(/!\[(.*?)\]\((.*?)\)/gim, `<img src="$2" alt="$1" />`);
-
-  // ========== LINKS ==========
-  html = html.replace(
-    /\[(.*?)\]\((.*?)\)/gim,
-    `<a href="$2" target="_blank">$1</a>`
-  );
-
   // ========== HEADINGS ==========
   html = html.replace(/^###### (.*$)/gim, "<h6>$1</h6>");
   html = html.replace(/^##### (.*$)/gim, "<h5>$1</h5>");
@@ -123,43 +128,98 @@ export function formatBotMessage(text) {
   html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
   html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
 
-  // ========== BLOCKQUOTES ==========
-  html = html.replace(/^> (.*$)/gim, `<blockquote>$1</blockquote>`);
-
   // ========== BOLD + ITALIC ==========
   html = html.replace(/\*\*\*(.*?)\*\*\*/gim, "<b><i>$1</i></b>");
   html = html.replace(/\*\*(.*?)\*\*/gim, "<b>$1</b>");
   html = html.replace(/\*(.*?)\*/gim, "<i>$1</i>");
   html = html.replace(/_(.*?)_/gim, "<i>$1</i>");
 
+  // ========== CHECKLISTS ==========
+  html = html.replace(/^- \[x\] (.*)$/gim, '<li class="checked">✅ $1</li>');
+  html = html.replace(/^- \[ \] (.*)$/gim, '<li class="unchecked">⬜ $1</li>');
+
+  // ---------- UNORDERED LISTS ----------
+  html = html.replace(/^\s*[-*+] (.*)$/gim, "<li>$1</li>");
+  html = html.replace(/(<li>.*<\/li>)/gims, "<ul>$1</ul>");
+
+  // ---------- NUMBERED LISTS ----------
+  html = html.replace(/^\s*\d+\. (.*)$/gim, "<li>$1</li>");
+  html = html.replace(/(<li>.*<\/li>)/gims, "<ol>$1</ol>");
+
+  // ========== BLOCKQUOTES ==========
+  html = html.replace(/^> (.*$)/gim, `<blockquote>$1</blockquote>`);
+
+  // Inline math \( ... \)
+  html = html.replace(/\\\((.*?)\\\)/gs, (match, expr) => {
+    return `<span class="math-inline">${convertSimpleMath(expr.trim())}</span>`;
+  });
+
+  // Block math \[ ... \]
+
+  html = html.replace(/\\\[(.*?)\\\]/gs, (match, expr) => {
+    return `<div class="math-block">${convertSimpleMath(expr.trim())}</div>`;
+  });
+
   // Block math $$...$$
-  text = text.replace(/\$\$(.*?)\$\$/gs, (match, expr) => {
-    return `<div class="math-block">${convertSimpleMath(expr)}</div>`;
+  html = html.replace(/\$\$(.*?)\$\$/gs, (match, expr) => {
+    return `<div class="math-block">${convertSimpleMath(expr.trim())}</div>`;
   });
 
   // Inline math $...$
-  text = text.replace(/\$(.*?)\$/g, (match, expr) => {
-    return `<span class="math">${convertSimpleMath(expr)}</span>`;
+  html = html.replace(/\$(.*?)\$/g, (match, expr) => {
+    return `<span class="math-inline">${convertSimpleMath(expr.trim())}</span>`;
   });
 
-  // Simple LaTeX parser for ^ and _
   function convertSimpleMath(expr) {
-    return expr
-      .replace(/([A-Za-z0-9])\^([A-Za-z0-9]+)/g, "$1<sup>$2</sup>")
-      .replace(/([A-Za-z0-9])_([A-Za-z0-9]+)/g, "$1<sub>$2</sub>");
+    return (
+      expr
+
+        // Superscript with braces: x^{2n+1}
+        .replace(/([A-Za-z0-9])\^\{([^}]+)\}/g, "$1<sup>$2</sup>")
+
+        // Subscript with braces: x_{i+1}
+        .replace(/([A-Za-z0-9])_\{([^}]+)\}/g, "$1<sub>$2</sub>")
+
+        // Simple superscript: x^2
+        .replace(/([A-Za-z0-9])\^([A-Za-z0-9]+)/g, "$1<sup>$2</sup>")
+
+        // Simple subscript: x_2
+        .replace(/([A-Za-z0-9])_([A-Za-z0-9]+)/g, "$1<sub>$2</sub>")
+
+        // Fractions: \frac{a}{b}
+        .replace(
+          /\\frac\{([^}]+)\}\{([^}]+)\}/g,
+          "<span class='frac'><span>$1</span><span>$2</span></span>"
+        )
+
+        // Square roots: \sqrt{x}
+        .replace(/\\sqrt\{([^}]+)\}/g, "√($1)")
+
+        // Greek letters
+        .replace(/\\alpha/g, "α")
+        .replace(/\\beta/g, "β")
+        .replace(/\\gamma/g, "γ")
+        .replace(/\\pi/g, "π")
+
+        // Math operators
+        .replace(/\\times/g, "×")
+        .replace(/\\cdot/g, "·")
+        .replace(/\\div/g, "÷")
+        .replace(/\\pm/g, "±")
+        .replace(/\\mp/g, "∓")
+        .replace(/\\leq?/g, "≤")
+        .replace(/\\geq?/g, "≥")
+        .replace(/\\neq/g, "≠")
+        .replace(/\\approx/g, "≈")
+        .replace(/\\infty/g, "∞")
+        .replace(/\\to/g, "→")
+        .replace(/\\Rightarrow/g, "⇒")
+
+        // Remove \left and \right (LLMs love adding these)
+        .replace(/\\left/g, "")
+        .replace(/\\right/g, "")
+    );
   }
-
-  // YouTube Links → Embed
-  text = text.replace(
-    /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu.be\/)([\w-]+))/g,
-    `<div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/$2" frameborder="0" allowfullscreen></iframe>
-     </div>`
-  );
-
-  // ========== CODE ==========
-  html = html.replace(/```([\s\S]*?)```/gim, "<pre><code>$1</code></pre>");
-  html = html.replace(/`([^`]+)`/gim, "<code>$1</code>");
 
   // ========== TABLES ==========
   if (/\|(.+)\|/g.test(html)) {
@@ -189,23 +249,55 @@ export function formatBotMessage(text) {
     );
   }
 
-  // ========== CHECKLISTS ==========
-  html = html.replace(/^- \[x\] (.*)$/gim, '<li class="checked">✅ $1</li>');
-  html = html.replace(/^- \[ \] (.*)$/gim, '<li class="unchecked">⬜ $1</li>');
-
-  // ---------- UNORDERED LISTS ----------
-  html = html.replace(/^\s*[-*+] (.*)$/gim, "<li>$1</li>");
-  html = html.replace(/(<li>.*<\/li>)/gims, "<ul>$1</ul>");
-
-  // ---------- NUMBERED LISTS ----------
-  html = html.replace(/^\s*\d+\. (.*)$/gim, "<li>$1</li>");
-  html = html.replace(/(<li>.*<\/li>)/gims, "<ol>$1</ol>");
-
   // ========== HORIZONTAL RULE ==========
   html = html.replace(/^---$/gim, "<hr>");
 
   // ========== LINE BREAKS ==========
   html = html.replace(/\n{2,}/gim, "<br><br>");
+
+  // ========== LINKS ==========
+  html = html.replace(
+    /\[(.*?)\]\((.*?)\)/gim,
+    `<a href="$2" target="_blank">$1</a>`
+  );
+
+  // YouTube Links → Embed
+  html = html.replace(
+    /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu.be\/)([\w-]+))/g,
+    `<div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/$2" frameborder="0" allowfullscreen></iframe>
+     </div>`
+  );
+
+  // ========== IMAGES ==========
+  html = html.replace(/!\[(.*?)\]\((.*?)\)/gim, `<img src="$2" alt="$1" />`);
+
+  // ========== CODE ==========
+  // 3. Restore code blocks with header + copy button
+  html = html.replace(/@@CODEBLOCK_(\d+)@@/g, (match, index) => {
+    const { lang, code } = codeBlocks[index];
+    const cleanCode = code.trim();
+
+    return `
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">${lang}</span>
+        <button class="code-copy-btn">
+          <img src="../icons/copy.png" alt="Copy" />
+        </button>
+      </div>
+      <pre><code>${cleanCode
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")}</code></pre>
+    </div>
+  `;
+  });
+
+  // 4. Restore inline code
+  html = html.replace(/§§INLINECODE_(\d+)§§/g, (match, index) => {
+    const code = inlineCodes[index];
+    return `<code>${code}</code>`;
+  });
 
   return html.trim();
 }

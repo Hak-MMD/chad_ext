@@ -70,45 +70,51 @@
     inset: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0,0,0,0.1);
     cursor: crosshair;
     pointer-events: auto;
   }
 
   #selection-box {
     position: absolute;
-    border: 2px dashed white;
+    border: 2px dashed grey;
     background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(1px);
     pointer-events: none;
   }
 
   #controls {
     position: absolute;
-    background: #fff;
-    padding: 8px 12px;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(6px);
+    padding: 10px 14px;
+    border-radius: 12px;
     display: flex;
-    gap: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.6);
   }
 
   button {
     all: unset;
-    padding: 6px 18px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: #fff;
-    font-size: 15px;
-    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    font-size: 14px;
+    font-weight: 600;
     color: #222;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
   }
-
   button:hover {
-    background: #f3f3f3;
+    background: #f5f5f5;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+  }
+  button:active {
+    background: #e9e9e9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   }
 `;
 
@@ -193,18 +199,18 @@
     const controls = document.createElement("div");
     controls.id = "controls";
 
-    Object.assign(controls.style, {
-      position: "absolute",
-      background: "#fff",
-      padding: "8px 12px",
-      borderRadius: "8px",
-      display: "flex",
-      gap: "10px",
-      zIndex: "10000",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-      transition: "opacity 0.15s ease",
-      opacity: "0",
-    });
+    // Object.assign(controls.style, {
+    //   position: "absolute",
+    //   background: "#fff",
+    //   padding: "8px 12px",
+    //   borderRadius: "8px",
+    //   display: "flex",
+    //   gap: "10px",
+    //   zIndex: "10000",
+    //   boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+    //   transition: "opacity 0.15s ease",
+    //   opacity: "0",
+    // });
 
     // Prevent clicks inside controls from bubbling up
     controls.addEventListener("mousedown", (e) => {
@@ -229,8 +235,9 @@
 
     // Search button
     const searchBtn = document.createElement("button");
-    searchBtn.innerText = "Search";
-    Object.assign(searchBtn.style, btnStyle);
+    searchBtn.innerHTML = "Search";
+    // searchBtn.innerHTML = `<span style="display:flex;align-items:center;gap:6px;"> 🔍 <span>Search</span> </span>`;
+    // Object.assign(searchBtn.style, btnStyle);
     searchBtn.onmouseenter = () => (searchBtn.style.background = "#f3f3f3");
     searchBtn.onmouseleave = () => (searchBtn.style.background = "#fff");
     searchBtn.onclick = () => captureScreenshot();
@@ -238,7 +245,8 @@
 
     // Cancel button
     const cancelBtn = document.createElement("button");
-    cancelBtn.innerText = "Cancel";
+    cancelBtn.innerHTML = "Cancel";
+    // cancelBtn.innerHTML = `<span style="display:flex;align-items:center;gap:6px;"> ✖️ <span>Cancel</span> </span>`;
     Object.assign(cancelBtn.style, btnStyle);
     cancelBtn.onmouseenter = () => (cancelBtn.style.background = "#f3f3f3");
     cancelBtn.onmouseleave = () => (cancelBtn.style.background = "#fff");

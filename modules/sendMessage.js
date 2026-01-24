@@ -22,17 +22,20 @@ export function setupSendHandler() {
           screenshot = screenshot.split(",")[1];
         }
 
-        if (text) addMessage(text, "user");
         if (screenshot) {
           const imgMsg = document.createElement("div");
-          imgMsg.classList.add("message", "user-message");
+          imgMsg.classList.add("message", "user-message", "chat-img");
           const img = document.createElement("img");
           img.src = "data:image/png;base64," + screenshot;
           img.className = "chat-img";
+          img.onclick = () => {
+            chrome.tabs.create({ url: img.src });
+          };
           imgMsg.appendChild(img);
           chatContainer.appendChild(imgMsg);
           chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+        if (text) addMessage(text, "user");
 
         sendBtn.disabled = true;
         sendBtn.style.cursor = "not-allowed";

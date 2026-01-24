@@ -2,6 +2,7 @@ export const chatContainer = document.getElementById("chat");
 export const messageInput = document.getElementById("message-input");
 export const sendBtn = document.getElementById("send-btn");
 import { formatBotMessage } from "./textParser.js";
+import { handleRetry } from "./utils/retry.js";
 
 export function addMessage(text, sender = "user") {
   const msgDiv = document.createElement("div");
@@ -21,61 +22,107 @@ export function addMessage(text, sender = "user") {
 
   // If bot → append hr + button row
   if (sender === "bot") {
-    const separator = document.createElement("hr");
-    separator.classList.add("msg-separator");
+    // const separator = document.createElement("hr");
+    // separator.classList.add("msg-separator");
+
+    const codeButtons = msgDiv.querySelectorAll(".code-copy-btn");
+
+    codeButtons.forEach((btn) => {
+      btn.onclick = () => {
+        const codeElement = btn
+          .closest(".code-block")
+          .querySelector("pre code");
+        const code = codeElement.innerText; // preserves formatting
+        navigator.clipboard.writeText(code);
+        showCopiedPopup(btn);
+      };
+    });
 
     const actionRow = document.createElement("div");
     actionRow.classList.add("msg-actions");
 
     // Create buttons
+    // BOT ACTION BUTTONS
     const copyBtn = document.createElement("button");
-    copyBtn.textContent = "Copy";
-    copyBtn.classList.add("msg-btn");
-
-    const saveBtn = document.createElement("button");
-    saveBtn.textContent = "Save";
-    saveBtn.classList.add("msg-btn");
+    copyBtn.classList.add("msg-icon-btn");
+    copyBtn.setAttribute("data-tooltip", "Copy");
+    copyBtn.innerHTML = `<img src="../icons/copy.png" alt="Copy" />`;
 
     const restartBtn = document.createElement("button");
-    restartBtn.textContent = "Restart";
-    restartBtn.classList.add("msg-btn");
+    restartBtn.classList.add("msg-icon-btn");
+    restartBtn.setAttribute("data-tooltip", "Retry");
+    restartBtn.innerHTML = `<img src="../icons/retry.png" alt="Retry" />`;
+
+    // const saveBtn = document.createElement("button");
+    // saveBtn.classList.add("msg-icon-btn");
+    // saveBtn.innerHTML = `<img src="../icons/save.png" alt="Save" />`;
 
     // Button functionality:
-    copyBtn.onclick = () =>
+    copyBtn.onclick = () => {
       navigator.clipboard.writeText(text.replace(/<[^>]*>/g, ""));
-    saveBtn.onclick = () => {
-      const blob = new Blob([text.replace(/<[^>]*>/g, "")], {
-        type: "text/plain",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "message.txt";
-      a.click();
-      URL.revokeObjectURL(url);
+      showCopiedPopup(copyBtn);
     };
-    restartBtn.onclick = () => location.reload();
+
+    // saveBtn.onclick = () => {
+    //   const blob = new Blob([text.replace(/<[^>]*>/g, "")], {
+    //     type: "text/plain",
+    //   });
+    //   const url = URL.createObjectURL(blob);
+    //   const a = document.createElement("a");
+    //   a.href = url;
+    //   a.download = "message.txt";
+    //   a.click();
+    //   URL.revokeObjectURL(url);
+    // };
+    restartBtn.onclick = () => {
+      handleRetry(restartBtn);
+    };
 
     // Append buttons to row
     actionRow.appendChild(copyBtn);
-    actionRow.appendChild(saveBtn);
+    // actionRow.appendChild(saveBtn);
     actionRow.appendChild(restartBtn);
 
     // Append hr + action row
-    chatContainer.appendChild(separator);
     chatContainer.appendChild(actionRow);
   }
 
   if (sender === "user") {
     const actionRow = document.createElement("div");
     actionRow.classList.add("msg-actions-user");
+
     const copyBtn = document.createElement("button");
-    copyBtn.textContent = "Copy";
-    copyBtn.classList.add("msg-btn-user");
-    copyBtn.onclick = () =>
+    copyBtn.classList.add("msg-icon-btn");
+    copyBtn.setAttribute("data-tooltip", "Copy");
+    copyBtn.innerHTML = `<img src="../icons/copy.png" alt="Copy" />`;
+
+    const editBtn = document.createElement("button");
+    editBtn.classList.add("msg-icon-btn");
+    editBtn.setAttribute("data-tooltip", "Edit");
+    editBtn.innerHTML = `<img src="../icons/edit.png" alt="Edit" />`;
+
+    copyBtn.onclick = () => {
       navigator.clipboard.writeText(text.replace(/<[^>]*>/g, ""));
+      showCopiedPopup(copyBtn);
+    };
+
+    editBtn.onclick = () => {
+      // Remove HTML formatting from the message
+      const plainText = text.replace(/<[^>]*>/g, "");
+
+      // Insert into input field
+      const input = document.getElementById("message-input");
+      input.value = plainText;
+
+      // Focus input
+      input.focus();
+
+      // Move cursor to the end
+      input.setSelectionRange(input.value.length, input.value.length);
+    };
 
     actionRow.appendChild(copyBtn);
+    actionRow.appendChild(editBtn);
 
     chatContainer.appendChild(actionRow);
 
@@ -87,4 +134,26 @@ export function setupInputListener() {
   messageInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendBtn.click();
   });
+}
+
+function showCopiedPopup(button) {
+  const popup = document.createElement("div");
+  popup.className = "copied-popup";
+  popup.textContent = "Copied!";
+
+  // Position relative to the button
+  const rect = button.getBoundingClientRect();
+  popup.style.top = rect.top - 28 + "px";
+  popup.style.left = rect.left + rect.width / 2 + "px";
+
+  document.body.appendChild(popup);
+
+  // Animate + remove
+  setTimeout(() => {
+    popup.classList.add("fade-out");
+  }, 800);
+
+  setTimeout(() => {
+    popup.remove();
+  }, 1100);
 }

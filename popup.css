@@ -263,7 +263,7 @@ body.theme-dark .message.user-message {
 .user-message {
   max-width: 75%;
   border-radius: 18px;
-  background: #fff;
+  background: #f7f7f8;
   align-self: flex-end;
   color: #222;
   color: black;
@@ -271,10 +271,38 @@ body.theme-dark .message.user-message {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+.chat-img {
+  max-width: 100%;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.chat-img:hover {
+  opacity: 0.85;
+}
+.user-message img.chat-img {
+  padding: 0;
+  margin: 0;
+}
+
 .bot-message {
-  width: 90%;
+  width: 88%;
   align-self: flex-start;
-  color: #000000;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 18px;
+  border: 1px solid #e3e3e3;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  line-height: 1.55;
+  color: #111;
+}
+.bot-message p {
+  margin: 6px 0;
 }
 
 /* .chat-container {
@@ -323,38 +351,94 @@ body.theme-dark .message.user-message {
 }
 .bot-message ul,
 .bot-message ol {
-  margin-left: 18px;
-  padding-left: 6px;
+  margin: 8px 0 8px 18px;
+  padding-left: 4px;
 }
 
 .bot-message li {
   margin-bottom: 4px;
+  line-height: 1.45;
 }
 
 .bot-message code {
-  background-color: #f7f7f8;
+  background: #ededed;
   padding: 2px 5px;
   border-radius: 4px;
   font-family: monospace;
-  color: #288d00;
+  color: #d6336c;
 }
 
 .bot-message pre {
-  background: #f7f7f8;
-  color: #f8f8f2;
-  padding: 20px;
-  border-radius: 6px;
-  overflow-x: scroll;
-  /* margin-top: 8px;
-  margin-bottom: 8px; */
-  font-size: 12px;
-  border: 2px solid #dadada;
+  background: #fcfcfc;
+  border-top: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.bot-message pre > code {
+  background: transparent;
 }
 
 .bot-message hr {
   border: none;
   border-top: 1px solid #ddd;
   margin: 10px 0;
+}
+.code-block {
+  background: #f7f7f8;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 10px 10px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #272727;
+}
+
+.code-lang {
+  opacity: 0.8;
+}
+
+.code-copy-btn {
+  height: 23px;
+  width: 23px;
+  /* margin: 5px; */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 3px 1px 0 0;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s ease;
+}
+
+.code-copy-btn:hover {
+  background: #f3f3f3;
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.code-copy-btn img {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+}
+.code-copy-btn:hover {
+  background: #f3f3f3;
 }
 
 .checked {
@@ -366,18 +450,16 @@ body.theme-dark .message.user-message {
 }
 
 .bot-message blockquote {
-  border-left: 3px solid #d0d0d0;
-  padding-left: 10px;
-  margin: 8px 0;
+  border-left: 4px solid #d0d0d0;
+  padding-left: 12px;
+  margin: 10px 0;
   color: #555;
   font-style: italic;
 }
 
-.bot-message img {
-  max-width: 100%;
-  border-radius: 6px;
-  margin: 10px 0;
-}
+/* .bot-message img {
+  margin-right: -10px;
+} */
 
 .bot-message a {
   color: #0070f3;
@@ -390,33 +472,19 @@ body.theme-dark .message.user-message {
 .bot-message table {
   width: 100%;
   border-collapse: collapse;
-  margin: 10px 0;
-  font-size: 13px;
+  margin: 12px 0;
+  font-size: 14px;
 }
+
 .bot-message th,
 .bot-message td {
-  border: 1px solid #ccc;
-  padding: 6px;
+  border: 1px solid #ddd;
+  padding: 8px;
 }
+
 .bot-message th {
-  background: #f2f2f2;
-  font-weight: bold;
-}
-
-.math-inline {
-  font-family: "Times New Roman", serif;
-  background: #f7f7f7;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-.math-block {
-  font-family: "Times New Roman", serif;
-  display: block;
-  background: #fafafa;
-  padding: 10px;
-  margin: 8px 0;
-  border-left: 4px solid #555;
+  background: #f3f3f3;
+  font-weight: 600;
 }
 
 .video-wrapper {
@@ -443,6 +511,15 @@ body.theme-dark .message.user-message {
   border-radius: 4px;
 }
 
+.math-inline {
+  font-family: "Times New Roman", serif;
+  background: #ededed;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #293d25;
+  font-size: 1.2em;
+}
+
 .math-block {
   display: block;
   background: #f3f3f3;
@@ -450,6 +527,19 @@ body.theme-dark .message.user-message {
   margin: 10px 0;
   border-left: 4px solid #444;
   font-family: "Times New Roman", serif;
+  font-size: 1.2em;
+}
+
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.frac span:first-child {
+  border-bottom: 1px solid #000;
+  padding: 0 2px;
 }
 
 .msg-separator {
@@ -460,44 +550,152 @@ body.theme-dark .message.user-message {
 
 .msg-actions {
   display: flex;
-  gap: 6px;
+  justify-content: start;
+  gap: 5px;
+  margin-top: -5px;
   margin-bottom: 8px;
+  margin-right: 5px;
   padding-left: 4px;
-}
-
-.msg-btn {
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid #cfcfcf;
-  background: #f8f8f8;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.msg-btn:hover {
-  background: #ececec;
 }
 
 .msg-actions-user {
   display: flex;
   justify-content: end;
-  gap: 6px;
+  gap: 5px;
+  margin-top: -5px;
   margin-bottom: 8px;
+  margin-right: 5px;
   padding-left: 4px;
 }
 
-.msg-btn-user {
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid #cfcfcf;
-  background: #f8f8f8;
+.msg-icon-btn {
+  min-height: 23px;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
   cursor: pointer;
-  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
 }
-.msg-btn-user:hover {
-  background: #ececec;
+
+.msg-icon-btn img {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  /* filter: brightness(0.2); */
+}
+
+.msg-icon-btn:hover {
+  background: #dddddd;
+}
+
+.msg-icon-btn {
+  position: relative; /* required for tooltip positioning */
+}
+
+/* Tooltip bubble */
+.msg-icon-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 130%; /* above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform-origin: bottom center;
+  transform: translateX(-50%) translateY(4px);
+  z-index: 999;
+}
+
+/* Tooltip arrow */
+.msg-icon-btn::before {
+  content: "";
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #222 transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* Show tooltip on hover */
+.msg-icon-btn:hover::after,
+.msg-icon-btn:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.msg-actions,
+.msg-actions-user {
+  display: flex;
+  gap: 5px;
+  height: 23px; /* ← reserves space */
+  margin-top: -5px; /* ← remove the gap */
+  margin-bottom: 8px;
+  padding-left: 4px;
+  opacity: 0; /* ← hidden by default */
+  pointer-events: none; /* ← prevents blocking hover */
+  transition: opacity 0.2s ease;
+}
+
+/* Show when hovering the message bubble */
+.message:hover + .msg-actions,
+.message:hover + .msg-actions-user {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.message {
+  position: relative;
+}
+.message::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px; /* size of the gap */
+  height: 10px;
+}
+
+/* Keep visible when hovering the buttons themselves */
+.msg-actions:hover,
+.msg-actions-user:hover {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.copied-popup {
+  position: fixed;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 999999;
+}
+
+.copied-popup.fade-out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-6px);
 }
 
 /* ============================= */
@@ -632,7 +830,7 @@ body.theme-dark .message.user-message {
 /* ============================= */
 .chat-placeholder {
   margin-top: 120px;
-  margin-bottom: 120px;
+  margin-bottom: 110px;
   font-size: 2rem;
   color: #424242;
   font-weight: bold;
