@@ -9,7 +9,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Step 1 — ping the tab to see if content.js is already injected
       chrome.tabs.sendMessage(tabId, { action: "ping" }, () => {
         if (chrome.runtime.lastError) {
-          // ❌ No content script → inject it
+          //  No content script → inject it
           console.log("content.js not loaded, injecting...");
 
           chrome.scripting.executeScript(
@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               if (chrome.runtime.lastError) {
                 console.warn(
                   "Restricted page:",
-                  chrome.runtime.lastError.message
+                  chrome.runtime.lastError.message,
                 );
 
                 sendResponse({
@@ -34,10 +34,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               // After injection → start overlay
               chrome.tabs.sendMessage(tabId, { action: "capture_overlay" });
               sendResponse({ success: true });
-            }
+            },
           );
         } else {
-          // ✅ content.js already injected → just start overlay
+          // content.js already injected → just start overlay
           console.log("content.js already loaded, sending capture_overlay");
           chrome.tabs.sendMessage(tabId, { action: "capture_overlay" });
           sendResponse({ success: true });

@@ -46,12 +46,23 @@ export function setupSendHandler() {
         chatContainer.appendChild(processingMsg);
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
-        const payload = { text: text || "", screenshot: screenshot || "" };
+        const payload = {
+          text: text || "",
+          screenshot: screenshot || "",
+          chatId: "696817f8c80591bdcb7196d0", // for testing purposes
+        };
 
-        fetch("https://chad-server.onrender.com/api/v1/ai/message", {
-          // fetch("http://localhost:3001/api/v1/ai/message", {
+        // for testing purposes
+        let authToken =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NjgxN2Y3YzgwNTkxYmRjYjcxOTZjZSIsImVtYWlsIjoiMW0xMDBtMjAwbUBnbWFpbC5jb20iLCJwbGFuIjoiZnJlZSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzc5NDc0MDkwLCJleHAiOjE3Nzk0NzQ5OTB9.nIcJmGij7EbEoYJSpS894dejCk8lyB0fwVeWBtG_LqE";
+
+        // fetch("https://chad-server.onrender.com/api/v1/ai/message", {
+        fetch("http://localhost:3001/api/v2/ai/message", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`, // for testing purposes
+          },
           body: JSON.stringify(payload),
         })
           .then(async (response) => {
