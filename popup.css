@@ -156,9 +156,14 @@ body.theme-dark .message.user-message {
   font-weight: 700;
   margin: 6px 0;
   background: black;
-  /* background: linear-gradient(90deg, #6a11cb, #2575fc); */
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  /* 2. Clip the background to the text characters */
   -webkit-background-clip: text;
-  color: transparent;
+  background-clip: text;
+
+  /* 3. Make the actual text color transparent so background shows through */
+  -webkit-text-fill-color: transparent;
+  color: transparent; /* Fallback */
 }
 
 .welcome-subtitle {
@@ -304,6 +309,98 @@ body.theme-dark .message.user-message {
   font-weight: normal;
   margin-right: 50px;
 }
+
+/* ============================= */
+/* 👤 User Avatar Styles */
+/* ============================= */
+
+.user-avatar-wrapper {
+  /* position: relative; */
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e5e5e5;
+  color: #333;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* Dropdown */
+.user-dropdown {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 160px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  display: none;
+  animation: fadeIn 0.2s ease;
+  z-index: 9999;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+#upgrade-link,
+#sidebar-upgrade-link {
+  background: linear-gradient(
+    to right,
+    #2575fc,
+    rgb(185, 90, 253),
+    rgb(255, 108, 189)
+  );
+  font-weight: 600;
+  /* 2. Clip the background to the text characters */
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  /* 3. Make the actual text color transparent so background shows through */
+  -webkit-text-fill-color: transparent;
+  color: transparent; /* Fallback */
+}
+
+.dropdown-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+}
+
+/* Gradient icon effect */
+.gradient-icon {
+  filter: brightness(1.2) saturate(1.4);
+}
+
 /* ============================= */
 /* 📷 Capture Button Styles */
 /* ============================= */
@@ -363,6 +460,8 @@ body.theme-dark .message.user-message {
 /* 📂 Sidebar Styles */
 /* ============================= */
 #sidebar {
+  display: flex;
+  flex-direction: column;
   position: fixed;
   left: -250px;
   top: 0;
@@ -417,6 +516,117 @@ body.theme-dark .message.user-message {
   width: 19px;
   height: 19px;
   margin-right: 7px;
+}
+
+/* ============================= */
+/* 👤 Sidebar User Section */
+/* ============================= */
+
+.sidebar-user-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin: auto 10px 10px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.sidebar-user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e5e5e5;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.sidebar-user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-plan {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.sidebar-upgrade-btn {
+  /* background: linear-gradient(
+    to right,
+    #2575fc,
+    rgb(185, 90, 253),
+    rgb(255, 108, 189),
+    rgb(255, 166, 57)
+  ); */
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-upgrade-btn:hover {
+  opacity: 0.9;
+}
+
+/* Dropdown (appears upward) */
+.sidebar-user-dropdown {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  width: 70%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  display: none;
+  animation: fadeIn 0.2s ease;
+  z-index: 9999;
+}
+
+.sidebar-user-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sidebar-user-dropdown .dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.sidebar-user-dropdown .dropdown-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
 }
 
 /* ============================= */

@@ -1,62 +1,80 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChadAI - AI Assistant</title>
     <link rel="stylesheet" href="popup.css" />
-        <!-- <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> -->
-
+    <!-- <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> -->
   </head>
   <body>
     <!-- ========================= -->
-<!-- 🌟 WELCOME SCREEN (NEW)  -->
-<!-- ========================= -->
-<div id="welcome-screen" class="welcome-screen">
-  <div class="welcome-card">
-    <img src="icons/icon.png" class="welcome-logo" alt="ChadAI Logo" />
+    <!-- 🌟 WELCOME SCREEN (NEW)  -->
+    <!-- ========================= -->
+    <div id="welcome-screen" class="welcome-screen">
+      <div class="welcome-card">
+        <img src="icons/icon.png" class="welcome-logo" alt="ChadAI Logo" />
 
-    <h1 class="welcome-title">ChadAI</h1>
-    <p class="welcome-subtitle">Your intelligent assistant, everywhere you browse.</p>
+        <h1 class="welcome-title">ChadAI</h1>
+        <p class="welcome-subtitle">
+          Your intelligent assistant, everywhere you browse.
+        </p>
 
-    <button id="welcome-login-btn" class="welcome-btn primary">
-      Sign In
-    </button>
+        <button id="welcome-login-btn" class="welcome-btn primary">
+          Sign In
+        </button>
 
-    <button id="welcome-register-btn" class="welcome-btn secondary">
-      Create Account
-    </button>
+        <button id="welcome-register-btn" class="welcome-btn secondary">
+          Create Account
+        </button>
 
-    <button id="welcome-website-btn" class="welcome-link">
-      Visit Website →
-    </button>
+        <button id="welcome-website-btn" class="welcome-link">
+          Visit Website →
+        </button>
 
-    <label class="remember-toggle">
-      <input type="checkbox" id="remember-me-checkbox" />
-      <span class="toggle-text">Remember me</span>
-    </label>
-  </div>
-</div>
-
-<div id="main-screen">
-
-    <div class="header">
-      <img src="icons/burger1.png" alt="menu" id="menu-btn"></img>
-      <div class="head-logo">
-        <img class="head-icon" src="icons/icon.ico" alt="Chad" />
-        <h1 class="head-text">ChadAI</h1>
+        <label class="remember-toggle">
+          <input type="checkbox" id="remember-me-checkbox" />
+          <span class="toggle-text">Remember me</span>
+        </label>
       </div>
-      <p></p>
     </div>
 
-   <!-- ...existing code... -->
-<div class="chat-container" id="chat">
-  <!-- Example bot message bubble -->
-  <div class="chat-placeholder">
-    Ask your <span style="font-size: 2rem;" class="gradient-text">question</span>?
-  </div>
+    <div id="main-screen">
+      <div class="header">
+        <img src="icons/burger1.png" alt="menu" id="menu-btn" />
 
-  <!-- <div class="bot-message">
+        <div class="head-logo">
+          <img class="head-icon" src="icons/icon.ico" alt="Chad" />
+          <h1 class="head-text">ChadAI</h1>
+        </div>
+
+        <!-- NEW: User Avatar -->
+        <div class="user-avatar-wrapper">
+          <div id="user-avatar" class="user-avatar"></div>
+
+          <div id="user-dropdown" class="user-dropdown">
+            <a id="profile-link" class="dropdown-item">
+              <img src="icons/profile.png" class="dropdown-icon" />
+              Profile
+            </a>
+
+            <a id="upgrade-link" class="dropdown-item">
+              <img src="icons/star.png" class="dropdown-icon gradient-icon" />
+              Upgrade Plan
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ...existing code... -->
+      <div class="chat-container" id="chat">
+        <!-- Example bot message bubble -->
+        <div class="chat-placeholder">
+          Ask your
+          <span style="font-size: 2rem" class="gradient-text">question</span>?
+        </div>
+
+        <!-- <div class="bot-message">
     <h1>Hello 1</h1>
     <h2>Hello2 </h2>
     <h3>Hello3 </h3>
@@ -79,11 +97,10 @@ name = "Bob"
 age = 25a
 print(f"{name} is {age} years old.")</code></pre>
       </div> -->
-  <!-- <hr> -->
+        <!-- <hr> -->
 
-
-  <!-- </div> -->
-  <!-- <div class="msg-actions">
+        <!-- </div> -->
+        <!-- <div class="msg-actions">
     <div class="msg-icon-btn">
       <img src="icons/copy.png" alt="Copy" />
     </div>
@@ -92,7 +109,7 @@ print(f"{name} is {age} years old.")</code></pre>
     </div>
   </div> -->
 
-  <!-- <div class="message user-message">
+        <!-- <div class="message user-message">
     this is a user message
   </div>
   <div class="msg-actions-user">
@@ -103,50 +120,47 @@ print(f"{name} is {age} years old.")</code></pre>
       <img src="icons/edit.png" alt="Edit" />
     </div>
   </div> -->
-</div>
-
-
-<!-- ...existing code... -->
-  <div class="popup-bottom">
-<!-- Screenshot preview above input -->
-<div id="screenshot-preview"></div>
-<div id="error-popup"></div>
-
-
-<div class="input-area">
-  <button role="button" id="capture-btn">
-    <img class="icon-photo" src="icons/photo.png" alt="Capture">
-    <p>Capture</p>
-  </button>
-  <input
-    type="text"
-    id="message-input"
-    placeholder="Type your message..."
-    autocomplete="off"
-  />
-  <button id="send-btn">
-    <img class="icon-photo" src="icons/send.png" alt="Send">
-  </button>
-</div>
-
-
-    <div class="copyright-1">
-      <p>© 2024-2026. ChadAI Beta Version</p>
-    </div>
-</div>
-  
-    <div id="sidebar">
-      <div class="sidebar-top">
-        <div class="sidebar-logo">
-          <img class="head-icon" src="icons/icon.ico" alt="Chad" />
-          <h1 class="head-text">ChadAI</h1>
-        </div>
-        <button id="close-sidebar">
-          <img id="menu-btn" src="icons/close.png" alt="Close">
-        </button>
       </div>
-      <ul class="sidebar-list">
-        <!-- <li>
+
+      <!-- ...existing code... -->
+      <div class="popup-bottom">
+        <!-- Screenshot preview above input -->
+        <div id="screenshot-preview"></div>
+        <div id="error-popup"></div>
+
+        <div class="input-area">
+          <button role="button" id="capture-btn">
+            <img class="icon-photo" src="icons/photo.png" alt="Capture" />
+            <p>Capture</p>
+          </button>
+          <input
+            type="text"
+            id="message-input"
+            placeholder="Type your message..."
+            autocomplete="off"
+          />
+          <button id="send-btn">
+            <img class="icon-photo" src="icons/send.png" alt="Send" />
+          </button>
+        </div>
+
+        <div class="copyright-1">
+          <p>© 2024-2026. ChadAI Beta Version</p>
+        </div>
+      </div>
+
+      <div id="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-logo">
+            <img class="head-icon" src="icons/icon.ico" alt="Chad" />
+            <h1 class="head-text">ChadAI</h1>
+          </div>
+          <button id="close-sidebar">
+            <img id="menu-btn" src="icons/close.png" alt="Close" />
+          </button>
+        </div>
+        <ul class="sidebar-list">
+          <!-- <li>
   <a href="#" id="settings-link">
     <img class="sidebar-icons" src="icons/settings.png" alt="Settings">
     Settings
@@ -160,25 +174,76 @@ print(f"{name} is {age} years old.")</code></pre>
     </label>
   </div>
 </li> -->
-        <li><a href="https://chad-ai-nd2k.onrender.com" target="_blank">
-          <img class="sidebar-icons" src="icons/weblink.png" alt="Website">
-          Website Link</a></li>
-        <li><a href="https://chad-ai-nd2k.onrender.com/policy" target="_blank">
-          <img class="sidebar-icons" src="icons/policy.png" alt="Policy">Privacy Policy</a></li>
-      </ul>
-      <div class="sidebar-bottom">
-        <!-- <div class="sidebar-logo">
+          <li>
+            <a href="https://chad-ai-nd2k.onrender.com" target="_blank">
+              <img
+                class="sidebar-icons"
+                src="icons/weblink.png"
+                alt="Website"
+              />
+              Website Link</a
+            >
+          </li>
+          <li>
+            <a href="https://chad-ai-nd2k.onrender.com/policy" target="_blank">
+              <img
+                class="sidebar-icons"
+                src="icons/policy.png"
+                alt="Policy"
+              />Privacy Policy</a
+            >
+          </li>
+        </ul>
+
+        <div id="sidebar-user-section" class="sidebar-user-section">
+          <div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+
+          <div class="sidebar-user-info">
+            <div id="sidebar-user-name" class="sidebar-user-name">
+              User Name
+            </div>
+            <div id="sidebar-user-plan" class="sidebar-user-plan">
+              Free Plan
+            </div>
+          </div>
+
+          <button id="sidebar-upgrade-btn" class="sidebar-upgrade-btn">
+            Upgrade
+          </button>
+
+          <!-- Dropdown (appears upward) -->
+          <div id="sidebar-user-dropdown" class="sidebar-user-dropdown">
+            <div class="dropdown-item" id="sidebar-profile-link">
+              <img src="icons/profile.png" class="dropdown-icon" />
+              Profile
+            </div>
+
+            <div class="dropdown-item" id="sidebar-settings-link">
+              <img src="icons/settings.png" class="dropdown-icon" />
+              Settings
+            </div>
+
+            <div class="dropdown-item" id="sidebar-upgrade-link">
+              <img src="icons/star.png" class="dropdown-icon gradient-icon" />
+              Upgrade Plan
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-bottom">
+          <!-- <div class="sidebar-logo">
           <img class="head-icon" src="icons/icon.ico" alt="Chad" />
           <h1 class="head-text">ChadAI</h1>
         </div> -->
-        <div class="copyright-2">
-          <p>© 2024-2026. ChadAI Beta Version</p>
+          <!-- <div class="copyright-2">
+            <p>© 2024-2026. ChadAI Beta Version</p>
+          </div> -->
         </div>
-      </div>   
+      </div>
     </div>
-    </div> <!-- end of main-screen wrapper -->
+    <!-- end of main-screen wrapper -->
 
-  <!-- <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> -->
     <script type="module" src="popup.js"></script>
