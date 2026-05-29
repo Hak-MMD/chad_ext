@@ -10,7 +10,8 @@ import {
 import { checkAuthState } from "./modules/auth.js";
 import { renderUserAvatar } from "./modules/avatar.js";
 
-const DEV_MODE = false;
+const DEV_MODE = true;
+// const DEV_MODE = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // -------------------------
