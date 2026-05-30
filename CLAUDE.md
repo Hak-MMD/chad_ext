@@ -12,14 +12,15 @@ my-extension/
 ├── background.js          # Service worker — handles capture flow + screenshot relay
 ├── content.js             # Injected into web pages — screenshot overlay (Shadow DOM)
 ├── popup.html             # Popup UI — two screens: welcome + main chat
-├── popup.css              # All popup styles
+├── popup.css              # All popup styles — design-token-driven, see CSS Design System below
 ├── popup.js               # Popup entry point — imports modules, initializes UI
 ├── modules/
 │   ├── auth.js            # checkAuthState() — reads tokens from chrome.storage.sync
 │   ├── avatar.js          # renderUserAvatar() — image or initials fallback
-│   ├── chat.js            # addMessage(), setupInputListener() — chat DOM logic
-│   ├── domEvents.js       # Settings accordion + theme toggle (mostly dead code now)
+│   ├── chat.js            # addMessage(), setupInputListener() — chat DOM + textarea auto-resize + draft save
+│   ├── domEvents.js       # Gutted — exports empty setupDOMEvents(), safe to delete or repurpose
 │   ├── errorHandler.js    # showErrorPopup() — shows #error-popup for 4s
+│   ├── modelSelector.js   # getSelectedModel(), setupModelSelector() — model pill dropdown in header
 │   ├── screenshot.js      # setupCaptureButton(), setupScreenshotListeners(), renderScreenshotPreview()
 │   ├── sendMessage.js     # setupSendHandler() — builds payload, calls API
 │   ├── sidebar.js         # setupSidebarToggle() — open/close sidebar
@@ -71,12 +72,21 @@ Chrome extensions run code in **three isolated environments** that can only comm
 - **All buttons currently do nothing** — not wired up yet
 
 **Main screen** (`#main-screen`) — shown to authenticated users:
-- Header: hamburger menu (`#menu-btn`), logo, user avatar (`#user-avatar`) with dropdown (`#user-dropdown`)
+- Header: hamburger menu (`#menu-btn`), center group with logo + model selector pill, user avatar (`#user-avatar`) with dropdown (`#user-dropdown`)
 - Chat container (`#chat`) — messages rendered here
-- Bottom bar: Capture button (`#capture-btn`), text input (`#message-input`), Send button (`#send-btn`)
+- Bottom bar: Capture button (`#capture-btn`), auto-resizing `<textarea>` (`#message-input`), Send button (`#send-btn`)
 - Screenshot preview area (`#screenshot-preview`) — appears above input when screenshot is pending
-- Error popup (`#error-popup`) — appears above input on errors
+- Error popup (`#error-popup`) — appears above input on errors, in-flow (not absolute)
 - Sidebar (`#sidebar`) — slides in from left
+
+**Sidebar layout** (top → bottom):
+- `.sidebar-top` — logo + close button
+- `.sidebar-new-chat-btn` — "+ New Chat" button
+- `.sidebar-chats` — scrollable chat history list (currently static placeholder items)
+  - Grouped by "Today", "Yesterday", "Previous 7 days"
+  - `.sidebar-chat-item.active` highlights the current chat in accent blue
+- `.sidebar-user-section` — user card at the bottom (avatar, name, plan, Upgrade button)
+  - Clicking opens `.sidebar-user-dropdown` which contains: Profile, Settings, Upgrade Plan, then a divider, then Website and Privacy Policy links
 
 ---
 
@@ -90,20 +100,23 @@ DEV_MODE = true → skip auth → showMainScreen()   ← CURRENT STATE
   ↓
 cleanup_overlay message → active tab (clears any leftover capture overlay)
   ↓
-setupDOMEvents()          — settings accordion + theme (mostly dead)
-setupInputListener()      — Enter key → sendBtn.click()
+setupDOMEvents()          — no-op (gutted)
+setupInputListener()      — Enter→send, Shift+Enter→newline, auto-resize textarea, draft save
 setupSendHandler()        — send button click handler
 setupSidebarToggle()      — hamburger + close sidebar
 setupCaptureButton()      — capture button → sends start_capture to background
 setupScreenshotListeners() — watches storage for new screenshots, shows preview
+setupModelSelector()      — wires model pill dropdown, loads saved model from storage
+  ↓
+Restore draft text from chrome.storage.local["draftText"] → populate textarea + resize
   ↓
 Read chrome.storage.sync["user"] → renderUserAvatar() if present
 Wire header avatar dropdown (Profile → chad-ai website, Upgrade → /upgrade)
 Wire sidebar user section (name, plan, avatar from storage)
-Wire sidebar dropdown (Profile, Settings, Upgrade — all open new tabs)
+Wire sidebar user dropdown (Profile, Settings, Upgrade — all open new tabs; Website + Policy are plain <a> tags)
 ```
 
-**`DEV_MODE = true` in `popup.js:13`** — bypasses auth check completely, always shows main screen. Set to `false` before shipping.
+**`DEV_MODE = true` in `popup.js:14`** — bypasses auth check completely, always shows main screen. Set to `false` before shipping.
 
 ---
 
@@ -120,10 +133,12 @@ chrome.storage.sync               — syncs across user's Chrome profiles
     role: string,
     avatarUrl: string | null,
   }
+  selectedModel: string           — last chosen model id, e.g. "gpt-4o"
   rememberMe: boolean             — if false, checkAuthState returns false
 
 chrome.storage.local              — local only, not synced
   lastScreenshot: string          — base64 data URL of cropped screenshot, or null
+  draftText: string               — unsent textarea content, restored on popup reopen
 ```
 
 ---
@@ -196,28 +211,39 @@ In `sendMessage.js → setupSendHandler()`:
 4. If screenshot: display image bubble in chat (with click-to-open-tab)
    If text: addMessage(text, "user")
    ↓
-5. Disable send button, show "Processing data..." gradient text
+5. Disable send button, show three-dot typing indicator (.processing-msg)
    ↓
 6. Build payload:
    {
      text: messageInput.value || "",
      screenshot: base64string_without_dataurl_prefix || "",
      chatId: "696817f8c80591bdcb7196d0",  ← HARDCODED for testing
+     model: getSelectedModel(),
    }
    ↓
-7. POST http://localhost:3001/api/v2/ai/message   ← LOCALHOST, hardcoded
-   Authorization: Bearer <hardcoded_token>         ← HARDCODED token for testing
+7. POST https://chad-server.onrender.com/api/v1/ai/message   ← production v1, hardcoded
+   Authorization: Bearer <hardcoded_token>                    ← HARDCODED token for testing
    ↓
-8. On success: remove "Processing...", addMessage(result.reply, "bot")
+8. On success: remove typing indicator, addMessage(result.reply, "bot")
    On error: showErrorPopup(errorText), throw
    ↓
-9. Clear messageInput, clear lastScreenshot from storage, hide preview
+9. Clear messageInput (reset height), clear lastScreenshot + draftText from storage, hide preview
 ```
 
 **What needs to change before shipping:**
-- Replace hardcoded `authToken` with `chrome.storage.sync.get("accessToken")`
+- Replace hardcoded `authToken` with `chrome.storage.sync.get("accessToken")` (retry.js already does this correctly)
 - Replace hardcoded `chatId` with the user's actual chatId from storage or API
-- Change URL from `localhost:3001` to production server URL
+- Switch from v1 to v2 endpoint and align with retry.js
+
+---
+
+## Model Selector (`modules/modelSelector.js`)
+
+- Exports `getSelectedModel()` — returns currently selected model id
+- Exports `setupModelSelector()` — wires the pill button + dropdown in the header
+- Models list: `gpt-4o`, `gpt-4o-mini`, `gpt-3.5-turbo` (hardcoded; plan-based filtering not yet implemented)
+- Selected model persisted to `chrome.storage.sync.selectedModel`, restored on open
+- Both `sendMessage.js` and `retry.js` import `getSelectedModel()` and include it in the API payload
 
 ---
 
@@ -232,7 +258,9 @@ In `sendMessage.js → setupSendHandler()`:
 
 **User messages** (`sender === "user"`):
 - `text` set directly as `innerHTML` (no markdown processing)
-- Action row: Copy button, Edit button (puts text back into input field)
+- Action row: Copy button, Edit button (puts text back into textarea and auto-resizes)
+
+`setupInputListener()` handles: Enter → send, Shift+Enter → newline, `input` event → auto-resize textarea + save draft to `chrome.storage.local.draftText`.
 
 `showCopiedPopup(button)` — shows floating "Copied!" tooltip, fades out after 800ms.
 
@@ -251,7 +279,7 @@ Custom implementation — no library. `formatBotMessage(text)` processes in this
 7. Unordered lists (`-`, `*`, `+`)
 8. Numbered lists (`1.`)
 9. Blockquotes (`>`)
-10. Math: inline `\(...\)`, block `\[...\]`, `$$...$$`, inline `$...$` → `convertSimpleMath()` which converts LaTeX-style superscripts, subscripts, fractions, Greek letters, operators to HTML/unicode
+10. Math: inline `\(...\)`, block `\[...\]`, `$$...$$`, inline `$...$` → `convertSimpleMath()` — converts LaTeX-style superscripts, subscripts, fractions, Greek letters, operators to HTML/unicode
 11. Tables (pipe syntax)
 12. Horizontal rules (`---`)
 13. Line breaks (`\n\n` → `<br><br>`)
@@ -260,28 +288,60 @@ Custom implementation — no library. `formatBotMessage(text)` processes in this
 16. Restore code blocks as `<div class="code-block">` with language label + copy button
 17. Restore inline code as `<code>`
 
-**Old commented-out version** of the parser is still in `textParser.js` above the current one. Safe to delete.
-
 ---
 
 ## Retry (`modules/utils/retry.js`)
 
 `handleRetry(retryButton)` walks the DOM backwards from the retry button's action row to find the previous user message, extracts plain text, re-sends to the API.
 
-**Problem:** `retry.js` still uses the old **v1** unauthenticated URL (`chad-server.onrender.com/api/v1/ai/message`) with no auth header. Needs to be updated to v2 with auth token, same as `sendMessage.js`.
+Uses v2 API (`http://localhost:3001/api/v2/ai/message`), reads `accessToken` from `chrome.storage.sync`, includes `model: getSelectedModel()` in payload.
+
+**Note:** retry.js hits localhost v2 while sendMessage.js hits production v1. These need to be aligned before shipping.
 
 ---
 
 ## Sidebar (`modules/sidebar.js`)
 
-Simple open/close via CSS class `open` on `#sidebar`. All links open new tabs:
-- Website → `https://chad-ai-nd2k.onrender.com`
-- Privacy Policy → `.../policy`
-- Profile → `.../profile`
-- Settings → `.../settings` — **this route doesn't exist on the website**
-- Upgrade → `.../upgrade` — **this route doesn't exist on the website**
+Simple open/close via CSS class `open` on `#sidebar`.
+
+**Chat history list** (`.sidebar-chats`) — currently static placeholder items grouped by date. When connecting real history: populate `#sidebar-chats` dynamically from the chats API, mark current chat's item with class `active`.
+
+**User dropdown** (`#sidebar-user-dropdown`) — opens upward above the user card. Contains:
+- Profile → `chad-ai-nd2k.onrender.com/profile`
+- Settings → `chad-ai-nd2k.onrender.com/settings` (**this route doesn't exist yet**)
+- Upgrade Plan → `chad-ai-nd2k.onrender.com/upgrade` (**this route doesn't exist yet**)
+- Divider
+- Website → `chad-ai-nd2k.onrender.com` (plain `<a>` tag, no JS handler needed)
+- Privacy Policy → `.../policy` (plain `<a>` tag)
 
 User section (name, plan, avatar) populated from `chrome.storage.sync.user` in `popup.js`.
+
+---
+
+## CSS Design System (`popup.css`)
+
+All visual values use CSS custom properties defined in `:root`:
+
+```css
+--color-bg / --color-surface / --color-surface-hover
+--color-border / --color-border-strong
+--color-text-primary / --color-text-secondary / --color-text-muted
+--color-accent: #2575fc        /* blue, used for focus rings, active states, links */
+--color-accent-soft            /* rgba accent for subtle backgrounds */
+--color-error-bg/text/border
+--gradient-brand               /* purple→blue, used for Upgrade button */
+--gradient-primary-btn         /* multi-color, used for welcome screen CTA */
+--text-xs/sm/base/md/lg/xl     /* 10/12/13/14/15/20px */
+--radius-sm/md/lg/xl/pill
+--shadow-sm/md/lg
+--z-dropdown: 100 / --z-sidebar: 200 / --z-toast: 300
+```
+
+Dark theme overrides live in `body.theme-dark` (not wired to a toggle yet).
+
+**Layout:** `body` is a fixed 350×500px flex column with `overflow: hidden`. `#main-screen` is `flex: 1; flex-direction: column`. `.chat-container` is `flex: 1; min-height: 0` (shrinks to let popup-bottom stay visible). `.popup-bottom` is `flex-shrink: 0`.
+
+**Model dropdown jump fix:** the dropdown uses `@keyframes modelDropdownIn` which includes `translateX(-50%)` in both `from` and `to` — this prevents the centering transform from being overridden by the animation.
 
 ---
 
@@ -300,18 +360,16 @@ User section (name, plan, avatar) populated from `chrome.storage.sync.user` in `
 
 | Issue | Location | Notes |
 |---|---|---|
-| `DEV_MODE = true` | `popup.js:13` | Auth bypassed — always shows main screen |
-| Hardcoded auth token | `sendMessage.js:57` | Replace with `chrome.storage.sync.get("accessToken")` |
-| Hardcoded chatId | `sendMessage.js:52` | Replace with user's actual chatId |
-| Hardcoded localhost URL | `sendMessage.js:60` | Change to production URL before shipping |
+| `DEV_MODE = true` | `popup.js:14` | Auth bypassed — always shows main screen |
+| Hardcoded auth token | `sendMessage.js:58` | Replace with `chrome.storage.sync.get("accessToken")` like retry.js does |
+| Hardcoded chatId | `sendMessage.js:53` | Replace with user's actual chatId |
+| sendMessage vs retry API mismatch | `sendMessage.js:61` vs `retry.js:32` | sendMessage → production v1; retry → localhost v2 — align both to production v2 |
 | Welcome screen buttons unwired | `popup.html` | Sign In, Register, Visit Website do nothing |
-| Retry uses old v1 API | `utils/retry.js:36` | No auth, wrong endpoint |
-| `/settings` and `/upgrade` routes | `popup.js:129,134` | These pages don't exist on website |
+| `/settings` and `/upgrade` routes | sidebar user dropdown | These pages don't exist on the website yet |
 | Token refresh not implemented | — | 15-min access token expires, extension gets 403 with no recovery |
-| No chat history on open | — | Popup only shows current session messages; no load from API on startup |
-| Duplicate `getInitials` function | `popup.js:138`, `avatar.js:19` | Same function defined twice |
-| `domEvents.js` mostly dead | `domEvents.js` | Settings accordion + theme toggle both reference commented-out HTML elements |
-| Old markdown parser | `textParser.js:1-100` | Entire old version commented out — safe to delete |
+| Chat history static | sidebar | `.sidebar-chats` contains placeholder items — needs real API integration |
+| Model list hardcoded | `modelSelector.js` | Plan-based model availability not implemented |
+| Dark theme toggle unwired | `popup.css` | `body.theme-dark` styles exist but nothing toggles the class |
 
 ---
 

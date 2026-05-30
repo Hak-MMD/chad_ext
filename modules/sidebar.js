@@ -5,6 +5,5 @@ export function setupSidebarToggle() {
 
   document.getElementById("close-sidebar").addEventListener("click", () => {
     document.getElementById("sidebar").classList.remove("open");
-    console.log(234);
   });
 }

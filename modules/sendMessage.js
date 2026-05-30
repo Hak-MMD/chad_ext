@@ -42,8 +42,8 @@ export function setupSendHandler() {
         sendBtn.style.cursor = "not-allowed";
 
         const processingMsg = document.createElement("div");
-        processingMsg.classList.add("gradient-text");
-        processingMsg.textContent = "Processing data...";
+        processingMsg.classList.add("processing-msg");
+        processingMsg.innerHTML = "<span></span><span></span><span></span>";
         chatContainer.appendChild(processingMsg);
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
@@ -58,8 +58,8 @@ export function setupSendHandler() {
         let authToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NjgxN2Y3YzgwNTkxYmRjYjcxOTZjZSIsImVtYWlsIjoiMW0xMDBtMjAwbUBnbWFpbC5jb20iLCJwbGFuIjoiZnJlZSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzc5NDc0MDkwLCJleHAiOjE3Nzk0NzQ5OTB9.nIcJmGij7EbEoYJSpS894dejCk8lyB0fwVeWBtG_LqE";
 
-        // fetch("https://chad-server.onrender.com/api/v1/ai/message", {
-        fetch("http://localhost:3001/api/v2/ai/message", {
+        fetch("https://chad-server.onrender.com/api/v1/ai/message", {
+          // fetch("http://localhost:3001/api/v2/ai/message", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
