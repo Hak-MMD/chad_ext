@@ -46,16 +46,16 @@ export function addMessage(text, sender = "user") {
     const copyBtn = document.createElement("button");
     copyBtn.classList.add("msg-icon-btn");
     copyBtn.setAttribute("data-tooltip", "Copy");
-    copyBtn.innerHTML = `<img src="../icons/copy.png" alt="Copy" />`;
+    copyBtn.innerHTML = `<img src="icons/copy.png" alt="Copy" />`;
 
     const restartBtn = document.createElement("button");
     restartBtn.classList.add("msg-icon-btn");
     restartBtn.setAttribute("data-tooltip", "Retry");
-    restartBtn.innerHTML = `<img src="../icons/retry.png" alt="Retry" />`;
+    restartBtn.innerHTML = `<img src="icons/retry.png" alt="Retry" />`;
 
     // const saveBtn = document.createElement("button");
     // saveBtn.classList.add("msg-icon-btn");
-    // saveBtn.innerHTML = `<img src="../icons/save.png" alt="Save" />`;
+    // saveBtn.innerHTML = `<img src="icons/save.png" alt="Save" />`;
 
     // Button functionality:
     copyBtn.onclick = () => {
@@ -94,12 +94,12 @@ export function addMessage(text, sender = "user") {
     const copyBtn = document.createElement("button");
     copyBtn.classList.add("msg-icon-btn");
     copyBtn.setAttribute("data-tooltip", "Copy");
-    copyBtn.innerHTML = `<img src="../icons/copy.png" alt="Copy" />`;
+    copyBtn.innerHTML = `<img src="icons/copy.png" alt="Copy" />`;
 
     const editBtn = document.createElement("button");
     editBtn.classList.add("msg-icon-btn");
     editBtn.setAttribute("data-tooltip", "Edit");
-    editBtn.innerHTML = `<img src="../icons/edit.png" alt="Edit" />`;
+    editBtn.innerHTML = `<img src="icons/edit.png" alt="Edit" />`;
 
     copyBtn.onclick = () => {
       navigator.clipboard.writeText(text.replace(/<[^>]*>/g, ""));
@@ -107,17 +107,12 @@ export function addMessage(text, sender = "user") {
     };
 
     editBtn.onclick = () => {
-      // Remove HTML formatting from the message
       const plainText = text.replace(/<[^>]*>/g, "");
-
-      // Insert into input field
       const input = document.getElementById("message-input");
       input.value = plainText;
-
-      // Focus input
+      input.style.height = "auto";
+      input.style.height = input.scrollHeight + "px";
       input.focus();
-
-      // Move cursor to the end
       input.setSelectionRange(input.value.length, input.value.length);
     };
 
@@ -132,7 +127,16 @@ export function addMessage(text, sender = "user") {
 
 export function setupInputListener() {
   messageInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendBtn.click();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
+
+  messageInput.addEventListener("input", () => {
+    messageInput.style.height = "auto";
+    messageInput.style.height = messageInput.scrollHeight + "px";
+    chrome.storage.local.set({ draftText: messageInput.value });
   });
 }
 

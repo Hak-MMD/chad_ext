@@ -43,12 +43,26 @@
       <div class="header">
         <img src="icons/burger1.png" alt="menu" id="menu-btn" />
 
-        <div class="head-logo">
-          <img class="head-icon" src="icons/icon.ico" alt="Chad" />
-          <h1 class="head-text">ChadAI</h1>
+        <div class="header-center">
+          <div class="head-logo">
+            <img class="head-icon" src="icons/icon.ico" alt="Chad" />
+            <h1 class="head-text">ChadAI</h1>
+          </div>
+
+          <div class="model-selector">
+            <button id="model-btn" class="model-btn">
+              <span class="model-name">GPT-4o</span>
+              <span class="model-chevron">▾</span>
+            </button>
+            <div id="model-dropdown" class="model-dropdown">
+              <div class="model-option active" data-model="gpt-4o">GPT-4o</div>
+              <div class="model-option" data-model="gpt-4o-mini">GPT-4o mini</div>
+              <div class="model-option" data-model="gpt-3.5-turbo">GPT-3.5</div>
+            </div>
+          </div>
         </div>
 
-        <!-- NEW: User Avatar -->
+        <!-- User Avatar -->
         <div class="user-avatar-wrapper">
           <div id="user-avatar" class="user-avatar"></div>
 
@@ -133,12 +147,12 @@ print(f"{name} is {age} years old.")</code></pre>
             <img class="icon-photo" src="icons/photo.png" alt="Capture" />
             <p>Capture</p>
           </button>
-          <input
-            type="text"
+          <textarea
             id="message-input"
             placeholder="Type your message..."
+            rows="1"
             autocomplete="off"
-          />
+          ></textarea>
           <button id="send-btn">
             <img class="icon-photo" src="icons/send.png" alt="Send" />
           </button>

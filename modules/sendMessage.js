@@ -2,6 +2,7 @@ import { chatContainer, messageInput, sendBtn, addMessage } from "./chat.js";
 import { hasContentToSend } from "./utils.js";
 import { showErrorPopup } from "./errorHandler.js";
 import { renderScreenshotPreview } from "./screenshot.js";
+import { getSelectedModel } from "./modelSelector.js";
 
 export function setupSendHandler() {
   console.log("Setting up send handler...");
@@ -50,6 +51,7 @@ export function setupSendHandler() {
           text: text || "",
           screenshot: screenshot || "",
           chatId: "696817f8c80591bdcb7196d0", // for testing purposes
+          model: getSelectedModel(),
         };
 
         // for testing purposes
@@ -95,7 +97,8 @@ export function setupSendHandler() {
           });
 
         messageInput.value = "";
-        chrome.storage.local.remove("lastScreenshot", () => {
+        messageInput.style.height = "auto";
+        chrome.storage.local.remove(["lastScreenshot", "draftText"], () => {
           renderScreenshotPreview(null);
         });
       });

@@ -6,6 +6,7 @@ import {
   setupCaptureButton,
   setupScreenshotListeners,
 } from "./modules/screenshot.js";
+import { setupModelSelector } from "./modules/modelSelector.js";
 
 import { checkAuthState } from "./modules/auth.js";
 import { renderUserAvatar } from "./modules/avatar.js";
@@ -46,6 +47,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupSidebarToggle();
   setupCaptureButton();
   setupScreenshotListeners();
+  setupModelSelector();
+
+  // -------------------------
+  // RESTORE DRAFT
+  // -------------------------
+  chrome.storage.local.get("draftText", (data) => {
+    if (data.draftText) {
+      const input = document.getElementById("message-input");
+      input.value = data.draftText;
+      input.style.height = "auto";
+      input.style.height = input.scrollHeight + "px";
+    }
+  });
 
   // -------------------------
   // AVATAR LOGIC
@@ -152,5 +166,5 @@ function showWelcomeScreen() {
 
 function showMainScreen() {
   document.getElementById("welcome-screen").style.display = "none";
-  document.getElementById("main-screen").style.display = "block";
+  document.getElementById("main-screen").style.display = "flex";
 }
