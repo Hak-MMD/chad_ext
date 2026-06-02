@@ -19,7 +19,7 @@ my-extension/
 │   ├── avatar.js          # renderUserAvatar() — image or initials fallback
 │   ├── chat.js            # addMessage(), setupInputListener() — chat DOM + textarea auto-resize + draft save
 │   ├── domEvents.js       # Gutted — exports empty setupDOMEvents(), safe to delete or repurpose
-│   ├── errorHandler.js    # showErrorPopup() — shows #error-popup for 4s
+│   ├── errorHandler.js    # showToast(msg, type) + showErrorPopup(msg) alias — floating toast notifications
 │   ├── modelSelector.js   # getSelectedModel(), setupModelSelector() — model pill dropdown in header
 │   ├── screenshot.js      # setupCaptureButton(), setupScreenshotListeners(), renderScreenshotPreview()
 │   ├── sendMessage.js     # setupSendHandler() — builds payload, calls API

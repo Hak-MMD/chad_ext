@@ -1314,18 +1314,109 @@ body.theme-dark {
 }
 
 /* ============================= */
-/* 🚨 Error Notice              */
+/* 🔔 Toast Notifications       */
 /* ============================= */
-#error-popup {
-  display: none;
-  margin: 4px 10px 0;
-  background: var(--color-error-bg);
-  color: var(--color-error-text);
-  border: 1px solid var(--color-error-border);
+#toast-container {
+  position: fixed;
+  bottom: 78px;
+  left: 10px;
+  right: 10px;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
   border-radius: var(--radius-md);
-  padding: 8px 12px;
+  background: #fff;
+  border-left: 3px solid;
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  animation: toastIn 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
   font-size: var(--text-base);
-  animation: fadeIn 0.2s ease;
+}
+
+.toast-exit {
+  animation: toastOut 0.28s ease forwards;
+}
+
+.toast-error   { border-color: #ef4444; }
+.toast-success { border-color: #22c55e; }
+.toast-info    { border-color: #3b82f6; }
+.toast-warning { border-color: #f59e0b; }
+
+.toast-item-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.toast-error .toast-item-icon   { background: #ef4444; }
+.toast-success .toast-item-icon { background: #22c55e; }
+.toast-info .toast-item-icon    { background: #3b82f6; }
+.toast-warning .toast-item-icon { background: #f59e0b; }
+
+.toast-item-msg {
+  flex: 1;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+.toast-item-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  padding: 0;
+  flex-shrink: 0;
+  transition: color 0.12s ease;
+  font-family: var(--font-base);
+}
+
+.toast-item-close:hover {
+  color: var(--color-text-primary);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 60px;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
 }
 
 /* ============================= */
